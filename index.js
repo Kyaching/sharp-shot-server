@@ -28,8 +28,9 @@ const Services = client.db("photographyReview").collection("services");
 
 app.get("/services", async (req, res) => {
   try {
+    const page = Number(req.query.page);
     const cursor = Services.find({});
-    const services = await cursor.toArray();
+    const services = await cursor.limit(page).toArray();
     res.send({
       success: true,
       message: "Data Got Successfully",
