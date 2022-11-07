@@ -31,10 +31,12 @@ app.get("/services", async (req, res) => {
     const page = Number(req.query.page);
     const cursor = Services.find({});
     const services = await cursor.limit(page).toArray();
+    const count = await Services.estimatedDocumentCount();
     res.send({
       success: true,
       message: "Data Got Successfully",
       data: services,
+      count,
     });
   } catch (err) {
     res.send({
