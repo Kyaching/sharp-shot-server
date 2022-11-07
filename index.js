@@ -24,6 +24,25 @@ async function connectDB() {
 }
 connectDB();
 
+const Services = client.db("photographyReview").collection("services");
+
+app.get("/services", async (req, res) => {
+  try {
+    const cursor = Services.find({});
+    const services = await cursor.toArray();
+    res.send({
+      success: true,
+      message: "Data Got Successfully",
+      data: services,
+    });
+  } catch (err) {
+    res.send({
+      success: false,
+      message: `Error Occurred ${err}`,
+    });
+  }
+});
+
 app.get("/", (req, res) => {
   res.send("Photography Server is Running");
 });
