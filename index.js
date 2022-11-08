@@ -65,6 +65,22 @@ app.get("/services/:id", async (req, res) => {
     });
   }
 });
+app.post("/services", async (req, res) => {
+  try {
+    const query = req.body;
+    const service = Services.insertOne(query);
+    res.send({
+      success: true,
+      message: "Data Send Successfully",
+      data: service,
+    });
+  } catch (err) {
+    res.send({
+      success: false,
+      message: `Error Occurred ${err}`,
+    });
+  }
+});
 
 // reviews
 app.get("/reviews", async (req, res) => {
