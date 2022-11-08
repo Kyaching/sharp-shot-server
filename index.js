@@ -25,7 +25,9 @@ async function connectDB() {
 connectDB();
 
 const Services = client.db("photographyReview").collection("services");
+const Reviews = client.db("photographyReview").collection("reviews");
 
+// services
 app.get("/services", async (req, res) => {
   try {
     const page = Number(req.query.page);
@@ -55,6 +57,40 @@ app.get("/services/:id", async (req, res) => {
       success: true,
       message: "Data Got Successfully",
       data: service,
+    });
+  } catch (err) {
+    res.send({
+      success: false,
+      message: `Error Occurred ${err}`,
+    });
+  }
+});
+
+// reviews
+app.get("/reviews", async (req, res) => {
+  try {
+    const cursor = Reviews.find({});
+    const reviews = await cursor.toArray();
+    res.send({
+      success: true,
+      message: "Data Got Successfully",
+      data: reviews,
+    });
+  } catch (err) {
+    res.send({
+      success: false,
+      message: `Error Occurred ${err}`,
+    });
+  }
+});
+app.post("/reviews", async (req, res) => {
+  try {
+    const review = req.body;
+    const result = await Reviews.insertOne(review);
+    res.send({
+      success: true,
+      message: "Data send Successfully",
+      data: result,
     });
   } catch (err) {
     res.send({
