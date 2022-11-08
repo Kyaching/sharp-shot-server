@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -37,6 +37,24 @@ app.get("/services", async (req, res) => {
       message: "Data Got Successfully",
       data: services,
       count,
+    });
+  } catch (err) {
+    res.send({
+      success: false,
+      message: `Error Occurred ${err}`,
+    });
+  }
+});
+
+app.get("/services/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) };
+    const service = await Services.findOne(query);
+    res.send({
+      success: true,
+      message: "Data Got Successfully",
+      data: service,
     });
   } catch (err) {
     res.send({
