@@ -69,12 +69,40 @@ app.get("/services/:id", async (req, res) => {
 // reviews
 app.get("/reviews", async (req, res) => {
   try {
-    const cursor = Reviews.find({});
+    let query = {};
+    if (req.query.email) {
+      query = {
+        email: req.query.email,
+      };
+    }
+    if (req.query.serviceId) {
+      query = {
+        serviceId: req.query.serviceId,
+      };
+    }
+    const cursor = Reviews.find(query);
     const reviews = await cursor.toArray();
     res.send({
       success: true,
       message: "Data Got Successfully",
       data: reviews,
+    });
+  } catch (err) {
+    res.send({
+      success: false,
+      message: `Error Occurred ${err}`,
+    });
+  }
+});
+app.delete("/reviews/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) };
+    const result = await Reviews.deleteOne(query);
+    res.send({
+      success: true,
+      message: "Data Successfully deleted",
+      data: result,
     });
   } catch (err) {
     res.send({
