@@ -2,7 +2,7 @@ const { MongoClient, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-
+const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 5000;
 
 const app = express();
@@ -14,10 +14,32 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.1cwqvry.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri);
 
+// jwt token middleware
+function verifyJWT(req, res, next) {
+  const headersToken = req.headers.authorization;
+
+  if (!headersToken) {
+    return res.status(401).send({
+      success: false,
+      message: "unauthorized access",
+    });
+  }
+  // const token = headersToken.split(" ")[1];
+  // jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+  //   if (err) {
+  //     return res
+  //       .status(401)
+  //       .send({ success: false, message: "unauthorized access" });
+  //   }
+  //   req.decoded = decoded;
+  //   next();
+  // });
+  next();
+}
+
 async function connectDB() {
   try {
     client.connect();
-    console.log("Database Connected");
   } catch (err) {
     console.log("Error occurred", err);
   }
@@ -27,11 +49,31 @@ connectDB();
 const Services = client.db("photographyReview").collection("services");
 const Reviews = client.db("photographyReview").collection("reviews");
 
+// jwt token
+app.post("/jwt", (req, res) => {
+  try {
+    const user = req.body;
+    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: "2d",
+    });
+    res.send({
+      success: true,
+      message: "Data Send Successfully",
+      data: { token },
+    });
+  } catch (err) {
+    res.send({
+      success: false,
+      message: `Error Occurred ${err}`,
+    });
+  }
+});
+
 // services
 app.get("/services", async (req, res) => {
   try {
     const page = Number(req.query.page);
-    const cursor = Services.find({});
+    const cursor = Services.find({}).sort({ date: -1 });
     const services = await cursor.limit(page).toArray();
     const count = await Services.estimatedDocumentCount();
     res.send({
@@ -68,6 +110,7 @@ app.get("/services/:id", async (req, res) => {
 app.post("/services", async (req, res) => {
   try {
     const query = req.body;
+    console.log(query);
     const service = Services.insertOne(query);
     res.send({
       success: true,
@@ -83,7 +126,7 @@ app.post("/services", async (req, res) => {
 });
 
 // reviews
-app.get("/reviews", async (req, res) => {
+app.get("/reviews", verifyJWT, async (req, res) => {
   try {
     let query = {};
     if (req.query.email) {
@@ -102,6 +145,31 @@ app.get("/reviews", async (req, res) => {
       success: true,
       message: "Data Got Successfully",
       data: reviews,
+    });
+  } catch (err) {
+    res.send({
+      success: false,
+      message: `Error Occurred ${err}`,
+    });
+  }
+});
+
+app.patch("/reviews/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const review = req.body.review;
+    console.log(id, review);
+    const query = { _id: ObjectId(id) };
+    const updateReview = {
+      $set: {
+        review,
+      },
+    };
+    const result = await Reviews.updateOne(query, updateReview);
+    res.send({
+      success: true,
+      message: "Data Successfully Updated",
+      data: result,
     });
   } catch (err) {
     res.send({
