@@ -24,16 +24,6 @@ function verifyJWT(req, res, next) {
       message: "unauthorized access",
     });
   }
-  // const token = headersToken.split(" ")[1];
-  // jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-  //   if (err) {
-  //     return res
-  //       .status(401)
-  //       .send({ success: false, message: "unauthorized access" });
-  //   }
-  //   req.decoded = decoded;
-  //   next();
-  // });
   next();
 }
 
@@ -158,7 +148,6 @@ app.patch("/reviews/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const review = req.body.review;
-    console.log(id, review);
     const query = { _id: ObjectId(id) };
     const updateReview = {
       $set: {
