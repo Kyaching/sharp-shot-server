@@ -100,7 +100,6 @@ app.get("/services/:id", async (req, res) => {
 app.post("/services", async (req, res) => {
   try {
     const query = req.body;
-    console.log(query);
     const service = Services.insertOne(query);
     res.send({
       success: true,
